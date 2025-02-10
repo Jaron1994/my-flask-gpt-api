@@ -6,9 +6,15 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-import os
+# Load OpenAI API Key from Environment Variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# 🔹 Add a Homepage Route to Prevent 404 Errors
+@app.route('/')
+def home():
+    return "Welcome to My Flask GPT API! 🎉 Your service is running."
+
+# 🔹 Your Chatbot API Route
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
