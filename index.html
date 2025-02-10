@@ -3,16 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with GPT</title>
+    <title>Resume Chatbot</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        #chat-box { width: 300px; height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin: auto; }
-        #user-input { width: 280px; padding: 5px; }
-        button { padding: 5px 10px; }
+        #chat-box { width: 400px; height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin: auto; text-align: left; }
+        #user-input, #file-upload, #job-title { width: 300px; padding: 5px; margin: 10px; }
+        button { padding: 5px 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h2>Chat with GPT</h2>
+    <h2>Resume Chatbot</h2>
+
+    <label for="job-title">Select Job Title:</label>
+    <select id="job-title">
+        <option value="Software Engineer">Software Engineer</option>
+        <option value="Data Analyst">Data Analyst</option>
+        <option value="Project Manager">Project Manager</option>
+    </select>
+
+    <br>
+    <label for="file-upload">Upload Resume (PDF Only):</label>
+    <input type="file" id="file-upload" accept=".pdf">
+    <br>
+
     <div id="chat-box"></div>
     <input type="text" id="user-input" placeholder="Type a message..." />
     <button onclick="sendMessage()">Send</button>
@@ -21,14 +34,15 @@
         async function sendMessage() {
             let userInput = document.getElementById("user-input").value;
             let chatBox = document.getElementById("chat-box");
+            let jobTitle = document.getElementById("job-title").value;
 
-            chatBox.innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
+            chatBox.innerHTML += `<p><strong>You:</strong> ${userInput} (Job: ${jobTitle})</p>`;
             document.getElementById("user-input").value = "";
 
-            let response = await fetch("https://my-gpt-api.onrender.com/chat", {
+            let response = await fetch("https://resume-bot-qhbr.onrender.com/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userInput })
+                body: JSON.stringify({ message: userInput, job_title: jobTitle })
             });
 
             let data = await response.json();
