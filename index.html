@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with GPT</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        #chat-box { width: 300px; height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin: auto; }
+        #user-input { width: 280px; padding: 5px; }
+        button { padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <h2>Chat with GPT</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="user-input" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        async function sendMessage() {
+            let userInput = document.getElementById("user-input").value;
+            let chatBox = document.getElementById("chat-box");
+
+            chatBox.innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
+            document.getElementById("user-input").value = "";
+
+            let response = await fetch("https://my-gpt-api.onrender.com/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            });
+
+            let data = await response.json();
+            chatBox.innerHTML += `<p><strong>Bot:</strong> ${data.response}</p>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
