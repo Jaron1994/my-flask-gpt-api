@@ -1,10 +1,12 @@
 import logging
+import os
+import io
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import openai
-import os
-import io
 from pdfminer.high_level import extract_text
+from pdf2image import convert_from_bytes
+import pytesseract
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -37,7 +39,12 @@ def analyze_resume():
         resume_bytes = file.read()
         resume_text = extract_text(io.BytesIO(resume_bytes))
 
-        if not resume_text.strip():
+        if not resume_text.strip():  # If text extraction fails, try OCR
+            logging.warning("Text extraction failed. Trying OCR...")
+            images = convert_from_bytes(resume_bytes)
+            resume_text = " ".join([pytesseract.image_to_string(img) for img in images])
+
+        if not resume_text.strip():  # If OCR also fails, return an error
             logging.error("Failed to extract text from PDF")
             return jsonify({"error": "Failed to extract text from the resume"}), 500
 
