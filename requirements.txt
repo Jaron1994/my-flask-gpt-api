@@ -3,5 +3,3 @@ flask-cors
 openai
 gunicorn
 pdfminer.six
-pdf2image
-pytesseract
