@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import openai
@@ -5,42 +6,57 @@ import os
 import io
 from pdfminer.high_level import extract_text
 
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+
 app = Flask(__name__)
 CORS(app)
 
-# Load OpenAI API Key securely
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/')
 def home():
-    return "Welcome to the Resume Analyzer API! 🎉"
+    return "Resume Analyzer API is running!"
 
-# 🔹 Endpoint to analyze resume
 @app.route('/analyze', methods=['POST'])
 def analyze_resume():
     try:
-        # Get the uploaded file and job title
-        file = request.files['resume']
+        logging.info("Received request at /analyze")
+
+        # Get uploaded file & job title
+        file = request.files.get('resume')
         job_title = request.form.get('job_title', '')
 
-        # Ensure a file was uploaded
         if not file:
+            logging.error("No file uploaded")
             return jsonify({"error": "No file uploaded"}), 400
 
-        # Convert PDF to text
-        resume_text = extract_text(io.BytesIO(file.read()))
+        logging.info(f"Received resume for job title: {job_title}")
 
-        # Send resume text and job title to OpenAI
-        prompt = f"Analyze the following resume and give feedback based on the target job title: {job_title}\n\nResume:\n{resume_text}"
-        
+        # Convert PDF file content into text
+        resume_bytes = file.read()
+        resume_text = extract_text(io.BytesIO(resume_bytes))
+
+        if not resume_text.strip():
+            logging.error("Failed to extract text from PDF")
+            return jsonify({"error": "Failed to extract text from the resume"}), 500
+
+        logging.info("Successfully extracted resume text")
+
+        # Create OpenAI prompt
+        prompt = f"Analyze this resume for the job title: {job_title}\n\n{resume_text}"
+
         response = openai.ChatCompletion.create(
             model="gpt-4-turbo",
             messages=[{"role": "user", "content": prompt}]
         )
 
+        logging.info("Successfully got response from OpenAI")
+
         return jsonify({"response": response["choices"][0]["message"]["content"]})
 
     except Exception as e:
+        logging.error(f"Error processing request: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
