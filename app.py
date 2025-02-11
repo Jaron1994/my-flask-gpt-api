@@ -8,10 +8,9 @@ from pdfminer.high_level import extract_text
 from pdf2image import convert_from_bytes
 import pytesseract
 
-import pytesseract
-
-# Set Tesseract path for Render
-pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+# Set Tesseract path for Render Free Tier
+tesseract_path = os.path.expanduser("~/tesseract/bin/tesseract")
+pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
