@@ -3,51 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Chatbot</title>
+    <title>Resume Analyzer</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        #chat-box { width: 400px; height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin: auto; text-align: left; }
-        #user-input, #file-upload, #job-title { width: 300px; padding: 5px; margin: 10px; }
+        #response { width: 80%; margin: auto; text-align: left; border: 1px solid #ccc; padding: 10px; min-height: 150px; }
+        #file-upload, #job-title { width: 300px; padding: 5px; margin: 10px; }
         button { padding: 5px 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h2>Resume Chatbot</h2>
+    <h2>Resume Analyzer</h2>
 
-    <label for="job-title">Select Job Title:</label>
-    <select id="job-title">
-        <option value="Software Engineer">Software Engineer</option>
-        <option value="Data Analyst">Data Analyst</option>
-        <option value="Project Manager">Project Manager</option>
-    </select>
-
-    <br>
     <label for="file-upload">Upload Resume (PDF Only):</label>
     <input type="file" id="file-upload" accept=".pdf">
     <br>
 
-    <div id="chat-box"></div>
-    <input type="text" id="user-input" placeholder="Type a message..." />
-    <button onclick="sendMessage()">Send</button>
+    <label for="job-title">Enter Target Job Title:</label>
+    <input type="text" id="job-title" placeholder="e.g. Data Analyst">
+    <br>
+
+    <button onclick="analyzeResume()">Analyze Resume</button>
+
+    <h3>AI Feedback:</h3>
+    <div id="response">Your feedback will appear here...</div>
 
     <script>
-        async function sendMessage() {
-            let userInput = document.getElementById("user-input").value;
-            let chatBox = document.getElementById("chat-box");
+        async function analyzeResume() {
+            let fileInput = document.getElementById("file-upload").files[0];
             let jobTitle = document.getElementById("job-title").value;
+            let responseBox = document.getElementById("response");
 
-            chatBox.innerHTML += `<p><strong>You:</strong> ${userInput} (Job: ${jobTitle})</p>`;
-            document.getElementById("user-input").value = "";
+            if (!fileInput) {
+                alert("Please upload a resume.");
+                return;
+            }
 
-            let response = await fetch("https://resume-bot-qhbr.onrender.com/chat", {
+            let formData = new FormData();
+            formData.append("resume", fileInput);
+            formData.append("job_title", jobTitle);
+
+            responseBox.innerHTML = "Analyzing resume... Please wait.";
+
+            let response = await fetch("https://resume-bot-qhbr.onrender.com/analyze", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userInput, job_title: jobTitle })
+                body: formData
             });
 
             let data = await response.json();
-            chatBox.innerHTML += `<p><strong>Bot:</strong> ${data.response}</p>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            responseBox.innerHTML = `<p>${data.response}</p>`;
         }
     </script>
 </body>
